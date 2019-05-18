@@ -12,12 +12,12 @@
 */
 
 
-bool checkEmergencyPinIsActive() {
- return checkIfPinIsActive(EMERGENCY_STOP_PIN, EMERGENCY_STOP_PIN_ACTIVE, EMERGENCY_STOP_PIN_INACTIVE, 0) == EMERGENCY_STOP_PIN_ACTIVE;
+bool checkAbortPinIsActive() {
+ return checkIfPinIsActive(ABORT_PIN, ABORT_PIN_ACTIVE, ABORT_PIN_INACTIVE, 1) == ABORT_PIN_ACTIVE;
 }
 
-bool checkSecurityButtonIsActive() {
-  return checkIfPinIsActive(SECURITY_BUTTON_PIN, SECURITY_BUTTON_PIN_ACTIVE, SECURITY_BUTTON_PIN_INACTIVE, 1) == SECURITY_BUTTON_PIN_ACTIVE;
+bool checkOperationalButtonIsActive() {
+  return checkIfPinIsActive(OPERATIONAL_BUTTON_PIN, OPERATIONAL_BUTTON_PIN_ACTIVE, OPERATIONAL_BUTTON_PIN_INACTIVE, 1) == OPERATIONAL_BUTTON_PIN_ACTIVE;
 }
 
 void automaticModeEndState() {
@@ -45,10 +45,10 @@ void resolveModeEndState(int isAutomaticMode) {
 int resolveModeState(int isAutomaticMode) {
   resolveDirection();
 
-  if (getCurrentDirection() == FORWARD && checkSecurityButtonIsActive()) {
+  if (getCurrentDirection() == FORWARD && checkOperationalButtonIsActive()) {
     startEngineForward();
   }
-  else if (getCurrentDirection() == REVERSE && checkSecurityButtonIsActive()) {
+  else if (getCurrentDirection() == REVERSE && checkOperationalButtonIsActive()) {
     setCanCount(CAN_NOT_INCREMENT);
     startEngineReverse();
   }
@@ -81,19 +81,24 @@ void forwardModsSetup(int lampPin, int lampPinActiveState, int canIncrement, con
 
 void automaticMode() {
   int modeInProggress = 1;
-  bool emergencyPinIsActive = checkEmergencyPinIsActive();
+  bool abortPinIsActive = checkAbortPinIsActive();
 
   forwardModsSetup(AUTOMATIC_MODE_LAMP_PIN, AUTOMATIC_MODE_LAMP_PIN_ACTIVE, CAN_INCREMENT, "Tryb automatyczny..");
+  resetCounter();
 
-  while (modeInProggress && !emergencyPinIsActive) {
-    emergencyPinIsActive = checkEmergencyPinIsActive();
-
-    if (checkSecurityButtonIsActive() && !emergencyPinIsActive) {
+  while (modeInProggress && !abortPinIsActive) {
+    if (checkOperationalButtonIsActive() && !abortPinIsActive) {
       modeInProggress = resolveModeState(IS_AUTOMATIC);
     }
     else {
       stopEngine();
     }
+
+    abortPinIsActive = checkAbortPinIsActive();
+  }
+
+  if (abortPinIsActive) {
+    printLcd("Gotowy do pracy.");
   }
 
   digitalWrite(AUTOMATIC_MODE_LAMP_PIN, AUTOMATIC_MODE_LAMP_PIN_INACTIVE);
@@ -101,19 +106,19 @@ void automaticMode() {
 
 void manualForwardMode() {
   int modeInProggress = 1;
-  bool emergencyPinIsActive = checkEmergencyPinIsActive();
+  bool abortPinIsActive = checkAbortPinIsActive();
 
   forwardModsSetup(MANUAL_MODE_LAMP_PIN, MANUAL_MODE_LAMP_PIN_ACTIVE, CAN_NOT_INCREMENT, "Tryb man. w przod..");
   
-  while (modeInProggress && !emergencyPinIsActive) {
-    if (checkSecurityButtonIsActive() && !emergencyPinIsActive) {
+  while (modeInProggress && !abortPinIsActive) {
+    if (checkOperationalButtonIsActive() && !abortPinIsActive) {
       modeInProggress = resolveModeState(IS_NOT_AUTOMATIC);
     }
     else {
       stopEngine();
     }
 
-    emergencyPinIsActive = checkEmergencyPinIsActive();
+    abortPinIsActive = checkAbortPinIsActive();
   }
 
   digitalWrite(MANUAL_MODE_LAMP_PIN, MANUAL_MODE_LAMP_PIN_INACTIVE);
@@ -122,18 +127,16 @@ void manualForwardMode() {
 void manualReverseMode() {
   setEngineStateForManualReverseMode();
 
-  bool securityButtonIsActive = checkSecurityButtonIsActive();
-  bool emergencyPinIsActive = checkEmergencyPinIsActive();
+  bool operationalButtonIsActive = checkOperationalButtonIsActive();
 
-  while (securityButtonIsActive && !emergencyPinIsActive) {
-    if (securityButtonIsActive && !emergencyPinIsActive) {
+  while (operationalButtonIsActive) {
+    if (operationalButtonIsActive) {
       startEngineReverse();
     }
     else {
       stopEngine();
     }
 
-    securityButtonIsActive = checkSecurityButtonIsActive();
-    emergencyPinIsActive = checkEmergencyPinIsActive();
+    operationalButtonIsActive = checkOperationalButtonIsActive();
   }
 }

@@ -24,3 +24,7 @@ extern void setImpulsPerMeter();
  * Calulate carpet lenght in meters, based on number of ticks from encoder.
 */
 extern float caluclateLenght();
+
+extern int getCounter();
+
+extern void resetCounter();

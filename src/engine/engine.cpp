@@ -2,7 +2,7 @@
 #include "pins/pins.h"
 #include "engine.h"
 
-#define DIRECTION_CHANGE_DELAY 50
+#define DIRECTION_CHANGE_DELAY 100
 
 // state variables
 static char engineNotRun;

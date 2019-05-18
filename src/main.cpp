@@ -48,7 +48,9 @@ void loop() {
       break;
     case MANUAL_FORWARD:
       manualForwardMode();
-      clearLcd();
+      char message[20];
+      sprintf(message, "Gotowy do pracy.");
+      printLcd(message);
       currentMode = MANUAL_REVERSE;
       break;
     default:

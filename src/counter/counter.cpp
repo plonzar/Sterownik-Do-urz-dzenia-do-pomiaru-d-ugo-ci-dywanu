@@ -114,6 +114,14 @@ void setImpulsPerMeter() {
   }
 }
 
+void resetCounter() {
+  counter = 0;
+}
+
+int getCounter() {
+  return counter;
+}
+
 float caluclateLenght() {
   return (float) counter / (float) impulsPerMeter;
 }

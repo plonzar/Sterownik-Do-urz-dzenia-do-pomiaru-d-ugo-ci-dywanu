@@ -26,8 +26,6 @@ void checkMode() {
 }
 
 void setup() {
-  Serial.begin(9600);
-
   setupPins();
   setupInterrupt();
   setupLcd();
